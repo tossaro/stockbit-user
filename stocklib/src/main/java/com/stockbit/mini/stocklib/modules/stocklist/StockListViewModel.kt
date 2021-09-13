@@ -17,17 +17,18 @@ class StockListViewModel(
     var stocks = MutableLiveData<MutableList<Stock>>()
     var user = MutableLiveData<User>()
     var isFromLocal = true
+    var limit = 50
 
     init {
         viewModelScope.launch {
-            stocks.value = stockRepository.getStocksLocal().toMutableList()
+            stocks.value = stockRepository.getStocksLocal(1, limit).toMutableList()
         }
     }
 
     fun getStocks(page: Int) {
         loadingIndicator.value = true
         viewModelScope.launch {
-            when (val response = stockRepository.getStocks(page)) {
+            when (val response = stockRepository.getStocks(limit, page)) {
                 is NetworkResponse.Success -> {
                     response.body.data.let {
                         if (isFromLocal) stocks.value = mutableListOf()

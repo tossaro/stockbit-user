@@ -12,7 +12,7 @@ class StockRepository(
     private val stockDao: StockDao
 ) : StockbitRepository(context) {
 
-    suspend fun getStocks(page: Int) = stockServiceV1.stocks(50, page, "USD")
-    suspend fun getStocksLocal(): List<Stock> = stockDao.load()
+    suspend fun getStocks(limit: Int, page: Int) = stockServiceV1.stocks(limit, page, "USD")
+    suspend fun getStocksLocal(offset: Int, limit: Int): List<Stock> = stockDao.load(offset, limit)
     suspend fun setStocksLocal(stocks: MutableList<Stock>) = stockDao.save(stocks)
 }

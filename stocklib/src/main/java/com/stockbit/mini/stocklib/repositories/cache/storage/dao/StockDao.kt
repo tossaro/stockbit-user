@@ -8,8 +8,8 @@ import com.stockbit.mini.stocklib.repositories.cache.storage.entity.Stock
 
 @Dao
 interface StockDao {
-    @Query("SELECT * FROM stock")
-    suspend fun load(): List<Stock>
+    @Query("SELECT * FROM stock LIMIT :limit OFFSET :offset")
+    suspend fun load(offset: Int, limit: Int): List<Stock>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun save(stock: List<Stock>)

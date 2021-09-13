@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Stock List-->
+    <string name="stock_list_title">Stockbit</string>
+    <string name="stock_list_sign_out_sure">Apa kamu yakin akan keluar?</string>
+    <string name="stock_list_sign_out_yes">Keluar</string>
+    <string name="stock_list_sign_out_no">Batal</string>
+</resources>

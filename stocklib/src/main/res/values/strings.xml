@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Stock List-->
+    <string name="stock_list_title">Stockbit</string>
+    <string name="stock_list_sign_out_sure">Are you sure to sign out?</string>
+    <string name="stock_list_sign_out_yes">Sign Out</string>
+    <string name="stock_list_sign_out_no">Cancel</string>
+</resources>

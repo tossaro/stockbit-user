@@ -1,0 +1,149 @@
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'kotlin-android-extensions'
+    id 'kotlin-kapt'
+}
+
+def serversFile = file('servers.properties')
+Properties serversProps = new Properties()
+serversProps.load(new FileInputStream(serversFile))
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "30.0.3"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 30
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+        multiDexEnabled true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            testCoverageEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+            testCoverageEnabled project.hasProperty('coverage')
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    flavorDimensions 'server'
+    productFlavors {
+        development {
+            dimension 'server'
+            buildConfigField 'String', 'SERVER_V1', serversProps['SERVER_V1_DEV']
+            buildConfigField 'String', 'WEBSOCKET_URL', serversProps['WEBSOCKET_URL']
+        }
+        staging {
+            dimension 'server'
+            buildConfigField 'String', 'SERVER_V1', serversProps['SERVER_V1_DEV']
+            buildConfigField 'String', 'WEBSOCKET_URL', serversProps['WEBSOCKET_URL']
+        }
+        beta {
+            dimension 'server'
+            buildConfigField 'String', 'SERVER_V1', serversProps['SERVER_V1_DEV']
+            buildConfigField 'String', 'WEBSOCKET_URL', serversProps['WEBSOCKET_URL']
+        }
+        production {
+            dimension 'server'
+            buildConfigField 'String', 'SERVER_V1', serversProps['SERVER_V1_DEV']
+            buildConfigField 'String', 'WEBSOCKET_URL', serversProps['WEBSOCKET_URL']
+        }
+    }
+    buildFeatures {
+        dataBinding = true
+    }
+}
+
+dependencies {
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    implementation project(path: ':userlib')
+    implementation project(path: ':stockbitcorelib')
+
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'androidx.core:core-ktx:1.3.1'
+    implementation 'androidx.appcompat:appcompat:1.3.0'
+    implementation 'com.google.android.material:material:1.2.1'
+    implementation project(path: ':userlib')
+
+    def room_version = "2.3.0"
+    implementation "androidx.room:room-ktx:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
+
+    def lifecycle_version = "2.3.1"
+    def arch_version = "2.1.0"
+
+    //Lifecycle
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.9'
+    // ViewModel
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    // LiveData
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
+    // Lifecycles only (without ViewModel or LiveData)
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+
+    // Saved state module for ViewModel
+    implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version"
+
+    // alternately - if using Java8, use the following instead of lifecycle-compiler
+    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
+
+    // optional - helpers for implementing LifecycleOwner in a Service
+    implementation "androidx.lifecycle:lifecycle-service:$lifecycle_version"
+
+    // optional - ProcessLifecycleOwner provides a lifecycle for the whole application process
+    implementation "androidx.lifecycle:lifecycle-process:$lifecycle_version"
+
+    // optional - ReactiveStreams support for LiveData
+    implementation "androidx.lifecycle:lifecycle-reactivestreams-ktx:$lifecycle_version"
+
+    // optional - Test helpers for LiveData
+    testImplementation "androidx.arch.core:core-testing:$arch_version"
+
+    implementation "androidx.activity:activity-ktx:1.2.3"
+    implementation "androidx.fragment:fragment-ktx:1.3.4"
+
+    // Logger & Debugger
+    implementation 'com.jakewharton.timber:timber:4.7.1'
+    implementation 'com.facebook.stetho:stetho:1.6.0'
+    implementation 'com.facebook.stetho:stetho-okhttp3:1.6.0'
+
+    // Network
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation "com.github.haroldadmin:NetworkResponseAdapter:3.0.1"
+
+    implementation "androidx.multidex:multidex:2.0.0"
+
+    def koin_version = "2.0.1"
+    implementation "io.insert-koin:koin-androidx-viewmodel:$koin_version"
+
+    def navigation_version = "2.3.1"
+    implementation "androidx.navigation:navigation-fragment-ktx:$navigation_version"
+    implementation "androidx.navigation:navigation-ui-ktx:$navigation_version"
+
+    // WebSocket
+    implementation "org.java-websocket:Java-WebSocket:1.5.1"
+
+    // Moshi
+    implementation 'com.squareup.moshi:moshi:1.9.2'
+    kapt 'com.squareup.moshi:moshi-kotlin-codegen:1.9.2'
+}

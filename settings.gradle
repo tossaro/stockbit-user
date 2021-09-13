@@ -1,0 +1,6 @@
+rootProject.name = "Stockbit User"
+include ':app'
+include ':userlib'
+include ':stocklib'
+include ':stockbitcorelib'
+project(':stockbitcorelib').projectDir = new File(rootDir, 'stockbitcore/stockbitcorelib/')

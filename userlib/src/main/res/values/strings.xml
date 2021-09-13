@@ -1,0 +1,26 @@
+<resources>
+    <!--Sign In-->
+    <string name="sign_in_title">Sign In</string>
+    <string name="sign_in_with_google">Sign In with Google</string>
+    <string name="sign_in_with_facebook">Sign In with Facebook</string>
+    <string name="sign_in_or">Or</string>
+    <string name="sign_in_username_or_email">Username or Email</string>
+    <string name="sign_in_password">Password</string>
+    <string name="sign_in_forgot_password">Forgot Password</string>
+    <string name="sign_in_dont_have_account">Don\'t have an account?</string>
+    <string name="sign_in_register">Register now</string>
+    <string name="sign_in_error_empty_field">Cannot be empty</string>
+    <string name="sign_in_error_min_character">Password should be at least 8 character(s) long</string>
+    <string name="sign_in_error_email_format">Invalid email format</string>
+    <string name="sign_in_error_phone_number_format">Invalid phone number format</string>
+    <string name="sign_in_btn_submit">Login</string>
+    <string name="sign_in_btn_fingerprint">Sign In with Fingerprint</string>
+    <string name="sign_in_call_cs_sure">Are you sure to contact customer service?</string>
+    <string name="sign_in_call_cs_yes">Call</string>
+    <string name="sign_in_call_cs_no">Cancel</string>
+    <string name="sign_in_call_number">085222852221</string>
+    <string name="sign_in_finger_title">Mini Stockbit\'s Authentication</string>
+    <string name="sign_in_finger_description">Please login to continue</string>
+    <string name="sign_in_finger_use_app_password">Use app password</string>
+    <string name="sign_in_tap_to_minimize">Please click back again to exit</string>
+</resources>

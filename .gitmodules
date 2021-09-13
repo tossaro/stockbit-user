@@ -1,0 +1,3 @@
+[submodule "stockbitcore"]
+	path = stockbitcore
+	url = https://github.com/tossaro/stockbit-core

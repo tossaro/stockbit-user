@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/navigation"
+    app:startDestination="@id/splashFragment">
+    <fragment
+        android:id="@+id/splashFragment"
+        android:name="com.stockbit.mini.user.modules.splash.SplashFragment"
+        android:label="SplashFragment">
+        <action
+            android:id="@+id/actionToSignInFragment"
+            app:destination="@id/signInFragment" />
+        <action
+            android:id="@+id/actionToStockListFragment"
+            app:destination="@id/stockListFragment" />
+        <deepLink app:uri="android-app://mini.stockbit.com/splash" />
+    </fragment>
+    <fragment
+        android:id="@+id/signInFragment"
+        android:name="com.stockbit.mini.userlib.modules.signin.SignInFragment"
+        android:label="SignInFragment">
+        <action
+            android:id="@+id/actionToStockListFragment"
+            app:destination="@id/stockListFragment" />
+        <deepLink app:uri="android-app://mini.stockbit.com/signin" />
+    </fragment>
+    <fragment
+        android:id="@+id/stockListFragment"
+        android:name="com.stockbit.mini.stocklib.modules.stocklist.StockListFragment"
+        android:label="StockListFragment">
+        <action
+            android:id="@+id/actionToSplashFragment"
+            app:destination="@id/splashFragment" />
+        <deepLink app:uri="android-app://mini.stockbit.com/stock" />
+    </fragment>
+</navigation>

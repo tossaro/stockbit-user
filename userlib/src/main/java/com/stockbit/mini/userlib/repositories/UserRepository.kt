@@ -7,7 +7,7 @@ import com.stockbit.mini.userlib.repositories.cache.storage.entity.User
 import com.stockbit.mini.userlib.repositories.remote.UserServiceV1
 import com.stockbit.mini.userlib.repositories.remote.request.SignInRequest
 import com.stockbit.mini.userlib.repositories.remote.request.SignInWithProviderRequest
-import com.stockbit.mini.userlib.tools.utils.DeviceUtil
+import com.stockbit.mini.corelib.tools.utils.DeviceUtil
 
 class UserRepository(
     val context: Context,

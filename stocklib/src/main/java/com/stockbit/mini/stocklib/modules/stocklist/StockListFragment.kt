@@ -1,6 +1,8 @@
 package com.stockbit.mini.stocklib.modules.stocklist
 
 import android.app.AlertDialog
+import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -48,9 +50,12 @@ class StockListFragment : StockbitViewModelFragment<StockListFragmentBinding, St
             it.alertMessage.observe(this, ::showAlert)
             it.user.observe(this, ::isSignIn)
             it.stocks.observe(this, { stocks ->
-                mAdapter?.stocks?.addAll(stocks)
-                mAdapter?.notifyDataSetChanged()
-                swipe_container.isRefreshing = false
+                stocks?.let {
+                    mAdapter?.stocks?.addAll(stocks)
+                    mAdapter?.notifyDataSetChanged()
+                    if (page == 1) rvStock.smoothScrollToPosition(0)
+                    swipe_container.isRefreshing = false
+                }
             })
         }
     }
@@ -157,11 +162,28 @@ class StockListFragment : StockbitViewModelFragment<StockListFragmentBinding, St
         }
     }
 
+    fun isNetworkAvailable(): Boolean {
+        val connectivityManager =
+            context?.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        return connectivityManager.activeNetworkInfo != null && connectivityManager.activeNetworkInfo!!
+            .isConnected
+    }
+
+    fun getStocks(p: Int) {
+        page = p
+        if (viewModel.isFromLocal != !isNetworkAvailable()) {
+            page = 1
+            mAdapter?.stocks?.clear()
+        }
+        viewModel.isFromLocal = !isNetworkAvailable()
+        viewModel.getStocks(page)
+    }
+
     override fun initViews() {
         super.initViews()
         swipe_container.setOnRefreshListener {
             viewModel.stocks.value = mutableListOf()
-            viewModel.getStocks(1)
+            getStocks(1)
         }
         mAdapter = StockAdapter()
         val mLayoutManager = LinearLayoutManager(activity)
@@ -171,10 +193,9 @@ class StockListFragment : StockbitViewModelFragment<StockListFragmentBinding, St
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (! recyclerView.canScrollVertically(1)){
                     page++
-                    viewModel.getStocks(page)
+                    getStocks(page)
                 }
             }
         })
-        viewModel.getStocks(page)
     }
 }

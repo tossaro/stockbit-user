@@ -48,27 +48,6 @@ class SignInViewModel(private val userRepository: UserRepository) : StockbitView
         CallbackManager.Factory.create()
     }
 
-    init {
-        if (BuildConfig.DEBUG) {
-            FacebookSdk.setIsDebugEnabled(true)
-            FacebookSdk.addLoggingBehavior(LoggingBehavior.INCLUDE_ACCESS_TOKENS)
-        }
-
-        LoginManager.getInstance()
-            .registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
-                override fun onSuccess(loginResult: LoginResult) {
-                    onGetAccessToken("facebook", loginResult.accessToken.token)
-                }
-                override fun onCancel() {
-                    loadingIndicator.value = false
-                    Timber.d("Login cancelled")
-                }
-                override fun onError(error: FacebookException) {
-                    onGetAccessTokenFail(error.message)
-                }
-            })
-    }
-
     fun signInByGoogle(view: View) {
         loadingIndicator.value = true
         val account = GoogleSignIn.getLastSignedInAccount(view.context)
@@ -87,6 +66,25 @@ class SignInViewModel(private val userRepository: UserRepository) : StockbitView
     }
 
     fun signInByFacebook(view: View) {
+        if (BuildConfig.DEBUG) {
+            FacebookSdk.setIsDebugEnabled(true)
+            FacebookSdk.addLoggingBehavior(LoggingBehavior.INCLUDE_ACCESS_TOKENS)
+        }
+
+        LoginManager.getInstance()
+            .registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+                override fun onSuccess(loginResult: LoginResult) {
+                    onGetAccessToken("facebook", loginResult.accessToken.token)
+                }
+                override fun onCancel() {
+                    loadingIndicator.value = false
+                    Timber.d("Login cancelled")
+                }
+                override fun onError(error: FacebookException) {
+                    onGetAccessTokenFail(error.message)
+                }
+            })
+
         val accessToken = AccessToken.getCurrentAccessToken()
         if (accessToken != null && !accessToken.isExpired) {
             onGetAccessToken("facebook", accessToken.toString())
@@ -160,13 +158,13 @@ class SignInViewModel(private val userRepository: UserRepository) : StockbitView
         errorUserIdString.value = ""
         if (userIdString.value.isNullOrEmpty()) {
             loadingIndicator.value = false
-            errorUserIdString.value = view.context.getString(R.string.sign_in_error_empty_field)
+            errorUserIdString.value = view.context?.getString(R.string.sign_in_error_empty_field) ?: "Error"
             return
         }
         errorPasswordString.value = ""
         if (passwordString.value.isNullOrEmpty()) {
             loadingIndicator.value = false
-            errorPasswordString.value = view.context.getString(R.string.sign_in_error_empty_field)
+            errorPasswordString.value = view.context?.getString(R.string.sign_in_error_empty_field) ?: "Error"
             return
         }
         viewModelScope.launch {

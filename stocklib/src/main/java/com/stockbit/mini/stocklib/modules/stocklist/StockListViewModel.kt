@@ -14,24 +14,40 @@ class StockListViewModel(
     private val userRepository: UserRepository,
     private val stockRepository: StockRepository
 ) : StockbitViewModel() {
-    var stocks = MutableLiveData<MutableList<Stock>>()
+    var stocks = MutableLiveData<MutableList<Stock>?>()
     var user = MutableLiveData<User>()
     var isFromLocal = true
     var limit = 50
 
     init {
-        viewModelScope.launch {
-            stocks.value = stockRepository.getStocksLocal(1, limit).toMutableList()
-        }
+        getStocksLocal(1)
+        getStocksRemote(1)
     }
 
     fun getStocks(page: Int) {
+        if (isFromLocal) getStocksLocal(page)
+        else getStocksRemote(page)
+    }
+
+    private fun getStocksLocal(page: Int) {
+        viewModelScope.launch {
+            val stocksTemp = stocks.value ?: mutableListOf()
+            val stocksLocal = stockRepository.getStocksLocal(limit * page, limit).toMutableList()
+            stocksLocal.forEach { coin -> stocksTemp.add(coin) }
+            stocks.value = stocksTemp
+        }
+    }
+
+    private fun getStocksRemote(page: Int) {
         loadingIndicator.value = true
         viewModelScope.launch {
             when (val response = stockRepository.getStocks(limit, page)) {
                 is NetworkResponse.Success -> {
                     response.body.data.let {
-                        if (isFromLocal) stocks.value = mutableListOf()
+                        if (isFromLocal) {
+                            stocks.value = null
+                            isFromLocal = false
+                        }
                         val stocksTemp = stocks.value ?: mutableListOf()
                         it.forEach { coin ->
                             val mCoin = coin.coin_info
@@ -47,10 +63,16 @@ class StockListViewModel(
                     }
                 }
                 is NetworkResponse.ServerError -> {
+                    isFromLocal = true
+                    stocks.value = null
+                    getStocksLocal(1)
                     loadingIndicator.value = false
                     alertMessage.value = response.body?.message.orEmpty()
                 }
                 is NetworkResponse.NetworkError -> {
+                    isFromLocal = true
+                    stocks.value = null
+                    getStocksLocal(1)
                     loadingIndicator.value = false
                     alertMessage.value = response.error.message.orEmpty()
                 }

@@ -22,5 +22,5 @@
     <string name="sign_in_finger_title">Mini Stockbit\'s Authentication</string>
     <string name="sign_in_finger_description">Please login to continue</string>
     <string name="sign_in_finger_use_app_password">Use app password</string>
-    <string name="sign_in_tap_to_minimize">Please click back again to exit</string>
+    <string name="sign_in_tap_to_minimize">Please tap back again to exit</string>
 </resources>

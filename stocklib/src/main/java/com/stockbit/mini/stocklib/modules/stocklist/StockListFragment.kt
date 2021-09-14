@@ -15,14 +15,13 @@ import androidx.navigation.NavDeepLinkRequest
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
+import com.google.gson.Gson
 import com.stockbit.mini.corelib.base.StockbitActivity
 import com.stockbit.mini.corelib.base.StockbitViewModelFragment
 import com.stockbit.mini.stocklib.BuildConfig
 import com.stockbit.mini.stocklib.R
 import com.stockbit.mini.stocklib.databinding.StockListFragmentBinding
-import com.stockbit.mini.stocklib.repositories.remote.response.USD
+import com.stockbit.mini.stocklib.repositories.remote.response.StockSocket
 import com.stockbit.mini.userlib.repositories.cache.storage.entity.User
 import kotlinx.android.synthetic.main.stock_list_fragment.*
 import org.java_websocket.client.WebSocketClient
@@ -50,11 +49,12 @@ class StockListFragment : StockbitViewModelFragment<StockListFragmentBinding, St
             it.alertMessage.observe(this, ::showAlert)
             it.user.observe(this, ::isSignIn)
             it.stocks.observe(this, { stocks ->
-                stocks?.let {
-                    mAdapter?.stocks?.addAll(stocks)
+                stocks?.let { ss ->
+                    mAdapter?.stocks?.addAll(ss)
                     mAdapter?.notifyDataSetChanged()
                     if (page == 1) rvStock.smoothScrollToPosition(0)
                     swipe_container.isRefreshing = false
+                    ss.forEach{ s -> if (webSocketClient.isOpen) subscribe(s.name) }
                 }
             })
         }
@@ -98,6 +98,7 @@ class StockListFragment : StockbitViewModelFragment<StockListFragmentBinding, St
 
     override fun onBackPressed() {
         if (doubleBackToExitPressedOnce) {
+            webSocketClient.close()
             activity?.finish()
             return
         }
@@ -108,58 +109,6 @@ class StockListFragment : StockbitViewModelFragment<StockListFragmentBinding, St
         Handler(Looper.getMainLooper()).postDelayed(Runnable {
             doubleBackToExitPressedOnce = false
         }, 2000)
-    }
-
-    private fun createWebSocketClient(coin: String) {
-        webSocketClient = object : WebSocketClient(URI(BuildConfig.WEBSOCKET_URL)) {
-            override fun onOpen(handshakedata: ServerHandshake?) {
-                Timber.d("onOpen")
-                subscribe(coin)
-            }
-            override fun onMessage(message: String?) {
-                Timber.d("onMessage: $message")
-                setUpPriceText(message)
-            }
-            override fun onClose(code: Int, reason: String?, remote: Boolean) {
-                Timber.d("onClose")
-                unsubscribe(coin)
-            }
-            override fun onError(ex: Exception?) {
-                Timber.d("onError: ${ex?.message}")
-            }
-        }
-        val socketFactory: SSLSocketFactory = SSLSocketFactory.getDefault() as SSLSocketFactory
-        webSocketClient.setSocketFactory(socketFactory)
-        webSocketClient.connect()
-    }
-
-    private fun subscribe(coin: String) {
-        webSocketClient.send(
-            "{\n" +
-                    "    \"action\": \"SubAdd\",\n" +
-                    "    \"subs\": [\"5~CCCAGG~$coin~USD\"]\n" +
-                    "}"
-        )
-    }
-
-    private fun unsubscribe(coin: String) {
-        webSocketClient.send(
-            "{\n" +
-                    "    \"action\": \"SubRemove\",\n" +
-                    "    \"subs\": [\"5~CCCAGG~$coin~USD\"]\n" +
-                    "}"
-        )
-    }
-
-    private fun setUpPriceText(message: String?) {
-        message?.let {
-            val moshi = Moshi.Builder().build()
-            val adapter: JsonAdapter<USD> = moshi.adapter(USD::class.java)
-            val usd = adapter.fromJson(message)
-            activity?.runOnUiThread {
-                rvStock.adapter?.notifyDataSetChanged()
-            }
-        }
     }
 
     fun isNetworkAvailable(): Boolean {
@@ -176,6 +125,7 @@ class StockListFragment : StockbitViewModelFragment<StockListFragmentBinding, St
             mAdapter?.stocks?.clear()
         }
         viewModel.isFromLocal = !isNetworkAvailable()
+        if (webSocketClient.isClosed) webSocketClient.reconnect()
         viewModel.getStocks(page)
     }
 
@@ -197,5 +147,64 @@ class StockListFragment : StockbitViewModelFragment<StockListFragmentBinding, St
                 }
             }
         })
+        createWebSocketClient()
+    }
+
+    private fun createWebSocketClient() {
+        webSocketClient = object : WebSocketClient(URI(BuildConfig.WEBSOCKET_URL)) {
+            override fun onOpen(handshakedata: ServerHandshake?) {
+                Timber.d("onOpen")
+                viewModel.getStocksLocal(1)
+                viewModel.getStocksRemote(1)
+            }
+            override fun onMessage(message: String?) {
+                Timber.d("onMessage: $message")
+                activity?.runOnUiThread {
+                    val usd = Gson().fromJson(message, StockSocket::class.java)
+                    if (usd?.TOPTIERFULLVOLUME != null && viewModel.loadingIndicator.value == false) {
+                        mAdapter?.stocks?.let { ss ->
+                            ss.forEach { s ->
+                                if (s.name == usd.SYMBOL) {
+                                    s.price = String.format("%.5f", usd.TOPTIERFULLVOLUME.toDouble())
+                                    mAdapter?.notifyItemChanged(ss.indexOf(s))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            override fun onClose(code: Int, reason: String?, remote: Boolean) {
+                Timber.d("onClose")
+                mAdapter?.stocks?.let { ss ->
+                    ss.forEach{ s -> unsubscribe(s.name) }
+                }
+            }
+            override fun onError(ex: Exception?) {
+                Timber.d("onError: ${ex?.message}")
+                viewModel.getStocksLocal(1)
+                viewModel.getStocksRemote(1)
+            }
+        }
+        val socketFactory: SSLSocketFactory = SSLSocketFactory.getDefault() as SSLSocketFactory
+        webSocketClient.setSocketFactory(socketFactory)
+        webSocketClient.connect()
+    }
+
+    private fun subscribe(coin: String) {
+        webSocketClient.send(
+            "{\n" +
+                    "    \"action\": \"SubAdd\",\n" +
+                    "    \"subs\": [\"21~$coin\"]\n" +
+                    "}"
+        )
+    }
+
+    private fun unsubscribe(coin: String) {
+        webSocketClient.send(
+            "{\n" +
+                    "    \"action\": \"SubRemove\",\n" +
+                    "    \"subs\": [\"2~Coinbase~$coin~USD\"]\n" +
+                    "}"
+        )
     }
 }

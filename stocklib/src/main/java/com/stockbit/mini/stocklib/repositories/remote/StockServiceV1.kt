@@ -7,7 +7,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface StockServiceV1 {
-    @GET("data/top/totalvolfull")
+    @GET("data/top/totaltoptiervolfull")
     suspend fun stocks(
         @Query("limit") limit: Int,
         @Query("page") page: Int,

@@ -20,8 +20,7 @@ class StockListViewModel(
     var limit = 50
 
     init {
-        getStocksLocal(1)
-        getStocksRemote(1)
+        loadingIndicator.value = true
     }
 
     fun getStocks(page: Int) {
@@ -29,18 +28,19 @@ class StockListViewModel(
         else getStocksRemote(page)
     }
 
-    private fun getStocksLocal(page: Int) {
+    fun getStocksLocal(page: Int) {
         viewModelScope.launch {
-            val stocksTemp = stocks.value ?: mutableListOf()
+            val stocksTemp = mutableListOf<Stock>()
             val stocksLocal = stockRepository.getStocksLocal(limit * page, limit).toMutableList()
             stocksLocal.forEach { coin -> stocksTemp.add(coin) }
             stocks.value = stocksTemp
+            loadingIndicator.value = false
         }
     }
 
-    private fun getStocksRemote(page: Int) {
-        loadingIndicator.value = true
+    fun getStocksRemote(page: Int) {
         viewModelScope.launch {
+            loadingIndicator.value = true
             when (val response = stockRepository.getStocks(limit, page)) {
                 is NetworkResponse.Success -> {
                     response.body.data.let {
@@ -48,13 +48,13 @@ class StockListViewModel(
                             stocks.value = null
                             isFromLocal = false
                         }
-                        val stocksTemp = stocks.value ?: mutableListOf()
+                        val stocksTemp = mutableListOf<Stock>()
                         it.forEach { coin ->
                             val mCoin = coin.coin_info
-                            mCoin.price = coin.display?.USD?.PRICE ?: "Error"
-                            mCoin.status = coin.display?.USD?.CHANGEPCTHOUR ?: "Error"
-                            val m = coin.display?.USD?.MKTCAPPENALTY ?: "Error"
-                            mCoin.status += " ($m)"
+                            mCoin.price = String.format("%.5f", coin.raw?.USD?.TOPTIERVOLUME24HOUR)
+                            mCoin.status = String.format("%.2f", coin.raw?.USD?.CHANGE24HOUR)
+                            val m = String.format("%.2f", coin.raw?.USD?.CHANGEPCTHOUR)
+                            mCoin.status += " ($m%)"
                             stocksTemp.add(mCoin)
                         }
                         stocks.value = stocksTemp

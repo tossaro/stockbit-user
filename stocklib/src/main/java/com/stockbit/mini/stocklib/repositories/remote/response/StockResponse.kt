@@ -16,30 +16,15 @@ data class MetaData(
 
 data class Coin(
     @SerializedName("CoinInfo") var coin_info: Stock,
-    @SerializedName("DISPLAY") var display: DISPLAY?,
+    @SerializedName("RAW") var raw: RAW?,
 )
 
-data class DISPLAY(
+data class RAW(
     @SerializedName("USD") val USD: USD
 )
 
 data class USD(
-    @SerializedName("FROMSYMBOL") val FROMSYMBOL: String,
-    @SerializedName("TOSYMBOL") val TOSYMBOL: String,
-    @SerializedName("MARKET") val MARKET: String,
-    @SerializedName("TYPE") val TYPE: String,
-    @SerializedName("FLAGS") val FLAGS: Double,
-    @SerializedName("PRICE") val PRICE: String,
-    @SerializedName("LASTUPDATE") val LASTUPDATE: String,
-    @SerializedName("LASTVOLUME") val LASTVOLUME: String,
-    @SerializedName("LASTVOLUMETO") val LASTVOLUMETO: String,
-    @SerializedName("LASTTRADEID") val LASTTRADEID: String,
-    @SerializedName("VOLUMEDAY") val VOLUMEDAY: String,
-    @SerializedName("VOLUMEDAYTO") val VOLUMEDAYTO: String,
-    @SerializedName("VOLUME24HOUR") val VOLUME24HOUR: String,
-    @SerializedName("VOLUME24HOURTO") val VOLUME24HOURTO: String,
-    @SerializedName("VOLUMEHOUR") val VOLUMEHOUR: String,
-    @SerializedName("VOLUMEHOURTO") val VOLUMEHOURTO: String,
-    @SerializedName("MKTCAPPENALTY") val MKTCAPPENALTY: String,
-    @SerializedName("CHANGEPCTHOUR") val CHANGEPCTHOUR: String
+    @SerializedName("TOPTIERVOLUME24HOUR") val TOPTIERVOLUME24HOUR: Double,
+    @SerializedName("CHANGE24HOUR") val CHANGE24HOUR: Double,
+    @SerializedName("CHANGEPCTHOUR") val CHANGEPCTHOUR: Double
 )
